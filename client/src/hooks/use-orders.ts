@@ -34,7 +34,7 @@ export function useCreateOrder() {
 export function useUpdateOrderStatus() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, status }: { id: number; status: UpdateOrderStatusRequest }) => {
+    mutationFn: async ({ id, status }: { id: string; status: UpdateOrderStatusRequest }) => {
       const url = buildUrl(api.orders.updateStatus.path, { id });
       const res = await fetch(url, {
         method: api.orders.updateStatus.method,

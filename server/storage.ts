@@ -1,18 +1,20 @@
-import { db } from "./db";
-import { users, products, orders, type InsertUser, type User, type InsertProduct, type Product, type InsertOrder, type Order } from "@shared/schema";
-import { eq } from "drizzle-orm";
+import { UserModel, ProductModel, OrderModel } from "./models";
+import { type InsertUser, type User, type InsertProduct, type Product, type InsertOrder, type Order } from "@shared/schema";
 import session from "express-session";
-import connectPg from "connect-pg-simple";
-import { pool } from "./db";
-
-const PostgresStore = connectPg(session);
+import createMongoStore from "connect-mongo";
 
 export function setupAuth(app: any) {
+  if (!process.env.MONGODB_URI) {
+    throw new Error("MONGODB_URI must be set");
+  }
+
+  const MongoStore = (createMongoStore as any).default || createMongoStore;
+
   app.use(
     session({
-      store: new PostgresStore({
-        pool,
-        createTableIfMissing: true,
+      store: MongoStore.create({
+        mongoUrl: process.env.MONGODB_URI,
+        collectionName: 'sessions'
       }),
       secret: process.env.SESSION_SECRET || 'fallback_secret',
       resave: false,
@@ -27,87 +29,97 @@ export function setupAuth(app: any) {
 
 export interface IStorage {
   // Users
-  getUser(id: number): Promise<User | undefined>;
+  getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
-  
+
   // Products
   getProducts(): Promise<Product[]>;
-  getProduct(id: number): Promise<Product | undefined>;
+  getProduct(id: string): Promise<Product | undefined>;
   createProduct(product: InsertProduct): Promise<Product>;
-  updateProduct(id: number, updates: Partial<InsertProduct>): Promise<Product | undefined>;
-  deleteProduct(id: number): Promise<void>;
+  updateProduct(id: string, updates: Partial<InsertProduct>): Promise<Product | undefined>;
+  deleteProduct(id: string): Promise<void>;
 
   // Orders
   getOrders(): Promise<Order[]>;
-  getOrder(id: number): Promise<Order | undefined>;
+  getOrder(id: string): Promise<Order | undefined>;
   createOrder(order: InsertOrder): Promise<Order>;
-  updateOrderStatus(id: number, orderStatus: string, paymentStatus?: string): Promise<Order | undefined>;
+  updateOrderStatus(id: string, orderStatus: string, paymentStatus?: string): Promise<Order | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
   // Users
-  async getUser(id: number): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.id, id));
-    return user;
+  async getUser(id: string): Promise<User | undefined> {
+    const user = await UserModel.findById(id);
+    return user ? user.toJSON() as unknown as User : undefined;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.username, username));
-    return user;
+    const user = await UserModel.findOne({ username });
+    return user ? user.toJSON() as unknown as User : undefined;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const [user] = await db.insert(users).values(insertUser).returning();
-    return user;
+    const user = await UserModel.create(insertUser);
+    return user.toJSON() as unknown as User;
   }
 
   // Products
   async getProducts(): Promise<Product[]> {
-    return await db.select().from(products);
+    const products = await ProductModel.find({});
+    return products.map(p => p.toJSON() as unknown as Product);
   }
 
-  async getProduct(id: number): Promise<Product | undefined> {
-    const [product] = await db.select().from(products).where(eq(products.id, id));
-    return product;
+  async getProduct(id: string): Promise<Product | undefined> {
+    const product = await ProductModel.findById(id);
+    return product ? product.toJSON() as unknown as Product : undefined;
   }
 
   async createProduct(product: InsertProduct): Promise<Product> {
-    const [newProduct] = await db.insert(products).values(product).returning();
-    return newProduct;
+    const newProduct = await ProductModel.create(product);
+    return newProduct.toJSON() as unknown as Product;
   }
 
-  async updateProduct(id: number, updates: Partial<InsertProduct>): Promise<Product | undefined> {
-    const [updatedProduct] = await db.update(products).set(updates).where(eq(products.id, id)).returning();
-    return updatedProduct;
+  async updateProduct(id: string, updates: Partial<InsertProduct>): Promise<Product | undefined> {
+    const updatedProduct = await ProductModel.findByIdAndUpdate(
+      id,
+      { $set: updates },
+      { new: true } // Return the updated document
+    );
+    return updatedProduct ? updatedProduct.toJSON() as unknown as Product : undefined;
   }
 
-  async deleteProduct(id: number): Promise<void> {
-    await db.delete(products).where(eq(products.id, id));
+  async deleteProduct(id: string): Promise<void> {
+    await ProductModel.findByIdAndDelete(id);
   }
 
   // Orders
   async getOrders(): Promise<Order[]> {
-    return await db.select().from(orders);
+    const orders = await OrderModel.find({});
+    return orders.map(o => o.toJSON() as unknown as Order);
   }
 
-  async getOrder(id: number): Promise<Order | undefined> {
-    const [order] = await db.select().from(orders).where(eq(orders.id, id));
-    return order;
+  async getOrder(id: string): Promise<Order | undefined> {
+    const order = await OrderModel.findById(id);
+    return order ? order.toJSON() as unknown as Order : undefined;
   }
 
   async createOrder(order: InsertOrder): Promise<Order> {
-    const [newOrder] = await db.insert(orders).values(order).returning();
-    return newOrder;
+    const newOrder = await OrderModel.create(order);
+    return newOrder.toJSON() as unknown as Order;
   }
 
-  async updateOrderStatus(id: number, orderStatus: string, paymentStatus?: string): Promise<Order | undefined> {
+  async updateOrderStatus(id: string, orderStatus: string, paymentStatus?: string): Promise<Order | undefined> {
     const updates: any = { orderStatus };
     if (paymentStatus) {
       updates.paymentStatus = paymentStatus;
     }
-    const [updatedOrder] = await db.update(orders).set(updates).where(eq(orders.id, id)).returning();
-    return updatedOrder;
+    const updatedOrder = await OrderModel.findByIdAndUpdate(
+      id,
+      { $set: updates },
+      { new: true }
+    );
+    return updatedOrder ? updatedOrder.toJSON() as unknown as Order : undefined;
   }
 }
 

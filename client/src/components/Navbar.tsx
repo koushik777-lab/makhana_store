@@ -1,117 +1,260 @@
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { useCart } from "@/store/cart";
-import { ShoppingBag, User, LogOut, ShieldCheck, Menu } from "lucide-react";
-import { useState } from "react";
+import { useWishlist } from "@/store/wishlist";
+import { ShoppingBag, User, LogOut, ShieldCheck, Menu, Heart, LayoutDashboard } from "lucide-react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export function Navbar() {
   const { user, logout } = useAuth();
   const { items, toggleCart } = useCart();
+  const { items: wishlistItems, setIsOpen: setWishlistOpen } = useWishlist();
   const [location] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const itemCount = items.reduce((acc, item) => acc + item.quantity, 0);
+  const wishlistCount = wishlistItems.length;
 
   const NavLinks = () => (
     <>
-      <Link href="/" className={`font-medium transition-colors hover:text-primary ${location === '/' ? 'text-primary' : 'text-foreground/80'}`}>Home</Link>
-      <Link href="/shop" className={`font-medium transition-colors hover:text-primary ${location === '/shop' ? 'text-primary' : 'text-foreground/80'}`}>Shop</Link>
-      <a href="#about" className="font-medium text-foreground/80 transition-colors hover:text-primary">Our Story</a>
+      {["Home", "Shop", "Our Story"].map((item) => {
+        const title = item;
+        const href = item === "Home" ? "/" : item === "Shop" ? "/shop" : "/about";
+        const isActive = location === href;
+
+        return (
+          <Link
+            key={item}
+            href={href}
+            className={`relative px-4 py-2 text-sm font-bold transition-colors ${isActive ? "text-primary" : "text-foreground/70 hover:text-foreground"
+              }`}
+          >
+            {isActive && (
+              <motion.div
+                layoutId="nav-pill"
+                className="absolute inset-0 bg-primary/10 rounded-full -z-10"
+                transition={{ type: "spring", stiffness: 400, damping: 30 }}
+              />
+            )}
+            {title}
+          </Link>
+        );
+      })}
     </>
   );
 
+  // Simple heuristic for dynamic avatar based on Name
+  const getAvatarUrl = (name: string) => {
+    // We use dicebear 'lorelei' which generates nice, human-like avatars deterministically based on the seed (name).
+    // It naturally creates a mix of male/female/neutral avatars based on the string hash.
+    return `https://api.dicebear.com/7.x/lorelei/svg?seed=${encodeURIComponent(name)}&backgroundColor=e2e8f0,b6e3f4,c0aede,ffdfbf`;
+  };
+
   return (
-    <header className="sticky top-0 z-40 w-full glass-panel border-b-0">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+    <header className="fixed top-4 left-0 right-0 z-50 w-full px-4 sm:px-6 pointer-events-none">
+      <motion.div
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        className="max-w-7xl mx-auto h-[72px] rounded-full bg-white/70 backdrop-blur-xl border border-white/50 shadow-[0_8px_32px_-8px_rgba(0,0,0,0.08)] flex items-center justify-between px-6 pointer-events-auto"
+      >
         <div className="flex items-center gap-8">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent to-primary flex items-center justify-center text-white font-display font-bold text-xl shadow-lg">
-              M
-            </div>
-            <span className="font-display font-bold text-2xl tracking-tight text-secondary">Makhana<span className="text-primary">.</span></span>
+          <Link href="/" className="flex items-center gap-2 group">
+            <motion.img
+              whileHover={{ rotate: 5, scale: 1.05 }}
+              src="/blogo.png"
+              alt="Makhana Logo"
+              className="w-12 h-12 md:w-14 md:h-14 object-contain drop-shadow-md"
+            />
+            <span className="font-display font-black text-2xl tracking-tight text-secondary group-hover:text-primary transition-colors">
+              Makhana<span className="text-primary">.</span>
+            </span>
           </Link>
-          
-          <nav className="hidden md:flex items-center gap-8">
+
+          <nav className="hidden md:flex items-center gap-1 bg-white/50 p-1.5 rounded-full border border-white/40 shadow-inner">
             <NavLinks />
           </nav>
         </div>
 
-        <div className="flex items-center gap-4">
-          <button 
+        <div className="flex items-center gap-2 sm:gap-4">
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             onClick={toggleCart}
-            className="relative p-2 rounded-full hover:bg-black/5 transition-colors"
+            className="relative p-2.5 rounded-full bg-white/50 hover:bg-white border border-white/40 hover:border-border/50 shadow-sm transition-all"
           >
-            <ShoppingBag className="w-6 h-6 text-secondary" />
+            <ShoppingBag className="w-5 h-5 text-secondary" />
             <AnimatePresence>
               {itemCount > 0 && (
-                <motion.div 
-                  initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}
-                  className="absolute -top-1 -right-1 w-5 h-5 bg-accent text-white rounded-full text-xs font-bold flex items-center justify-center shadow-sm"
+                <motion.div
+                  initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0, opacity: 0 }}
+                  className="absolute -top-1 -right-1 w-5 h-5 bg-primary text-white rounded-full text-xs font-black flex items-center justify-center shadow-md shadow-primary/30"
                 >
                   {itemCount}
                 </motion.div>
               )}
             </AnimatePresence>
-          </button>
+          </motion.button>
+
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setWishlistOpen(true)}
+            className="relative p-2.5 rounded-full bg-white/50 hover:bg-white border border-white/40 hover:border-border/50 shadow-sm transition-all"
+          >
+            <Heart className="w-5 h-5 text-secondary" />
+            <AnimatePresence>
+              {wishlistCount > 0 && (
+                <motion.div
+                  initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0, opacity: 0 }}
+                  className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full text-xs font-black flex items-center justify-center shadow-md shadow-red-500/30"
+                >
+                  {wishlistCount}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.button>
 
           {user ? (
-            <div className="hidden md:flex items-center gap-4 border-l border-border/50 pl-4">
-              <span className="text-sm font-medium text-muted-foreground">Hi, {user.username}</span>
-              {user.isAdmin && (
-                <Link href="/admin" className="p-2 rounded-full hover:bg-black/5 text-primary transition-colors" title="Admin Dashboard">
-                  <ShieldCheck className="w-5 h-5" />
-                </Link>
-              )}
-              <button onClick={() => logout()} className="p-2 rounded-full hover:bg-black/5 text-foreground/70 transition-colors" title="Logout">
-                <LogOut className="w-5 h-5" />
-              </button>
+            <div className="hidden md:flex items-center gap-4 border-l border-border/30 pl-4 h-8">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="relative group rounded-full outline-none focus:ring-2 focus:ring-primary/20 transition-all">
+                    <Avatar className="h-10 w-10 border-2 border-white shadow-md group-hover:border-primary/50 transition-colors">
+                      <AvatarImage src={getAvatarUrl(user.username)} alt={user.username} />
+                      <AvatarFallback className="bg-primary/10 text-primary font-bold">
+                        {user.username.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56 p-2 rounded-2xl bg-white/95 backdrop-blur-xl border border-white/50 shadow-2xl mt-4">
+                  <DropdownMenuLabel className="font-normal px-3 py-2">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-bold leading-none text-secondary tracking-tight">{user.username}</p>
+                      <p className="text-xs leading-none text-muted-foreground mt-1">
+                        {user.mobile}
+                      </p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator className="bg-border/40 my-2 shadow-[0_1px_0_0_rgba(255,255,255,0.8)]" />
+
+                  {user.isAdmin && (
+                    <DropdownMenuItem asChild className="cursor-pointer rounded-xl hover:bg-black/5 focus:bg-black/5 px-3 py-2.5 transition-colors">
+                      <Link href="/admin" className="flex items-center w-full font-medium text-foreground/80">
+                        <ShieldCheck className="mr-3 h-4 w-4 text-primary" />
+                        <span>Admin Dashboard</span>
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
+
+                  <DropdownMenuItem asChild className="cursor-pointer rounded-xl hover:bg-black/5 focus:bg-black/5 px-3 py-2.5 transition-colors">
+                    <Link href="/profile" className="flex items-center w-full font-medium text-foreground/80">
+                      <LayoutDashboard className="mr-3 h-4 w-4 text-secondary" />
+                      <span>My Dashboard</span>
+                    </Link>
+                  </DropdownMenuItem>
+
+                  <DropdownMenuSeparator className="bg-border/40 my-2 shadow-[0_1px_0_0_rgba(255,255,255,0.8)]" />
+
+                  <DropdownMenuItem
+                    onClick={() => logout()}
+                    className="cursor-pointer rounded-xl text-destructive hover:bg-destructive/10 focus:bg-destructive/10 focus:text-destructive px-3 py-2.5 transition-colors font-medium group"
+                  >
+                    <LogOut className="mr-3 h-4 w-4 group-hover:-translate-x-1 transition-transform" />
+                    <span>Log out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           ) : (
-            <Link href="/auth" className="hidden md:flex items-center gap-2 px-5 py-2.5 rounded-full bg-secondary text-white font-medium hover:bg-secondary/90 transition-all hover:shadow-lg hover:-translate-y-0.5">
+            <Link href="/auth" className="hidden md:flex items-center gap-2 px-6 py-2.5 rounded-full bg-primary text-white font-bold hover:bg-primary/90 transition-all hover:shadow-lg hover:shadow-primary/20 hover:-translate-y-0.5">
               <User className="w-4 h-4" />
               <span>Sign In</span>
             </Link>
           )}
 
-          <button 
-            className="md:hidden p-2 text-secondary"
+          <motion.button
+            whileTap={{ scale: 0.9 }}
+            className="md:hidden p-2 text-secondary bg-white/50 border border-white/40 rounded-full hover:bg-white shadow-sm"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
             <Menu className="w-6 h-6" />
-          </button>
+          </motion.button>
         </div>
-      </div>
+      </motion.div>
 
-      {/* Mobile Menu */}
       <AnimatePresence>
         {mobileMenuOpen && (
-          <motion.div 
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="md:hidden overflow-hidden bg-white/80 backdrop-blur-md border-t border-border/50"
+          <motion.div
+            initial={{ opacity: 0, y: -20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 300, damping: 25 }}
+            className="md:hidden fixed top-[88px] left-4 right-4 z-40 bg-white/90 backdrop-blur-2xl border border-white/50 rounded-3xl shadow-2xl overflow-hidden"
           >
-            <div className="px-4 py-6 flex flex-col gap-4">
-              <NavLinks />
-              <div className="h-px bg-border/50 w-full my-2"></div>
-              {user ? (
-                <>
-                  <div className="font-medium text-secondary">Account: {user.username}</div>
-                  {user.isAdmin && (
-                    <Link href="/admin" className="font-medium text-primary flex items-center gap-2">
-                      <ShieldCheck className="w-4 h-4" /> Admin Dashboard
+            <div className="px-6 py-8 flex flex-col gap-6">
+              <div className="flex flex-col gap-2">
+                {["Home", "Shop", "Our Story"].map((item, i) => (
+                  <motion.div
+                    key={item}
+                    initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.1 }}
+                  >
+                    <Link
+                      href={item === "Home" ? "/" : item === "Shop" ? "/shop" : "/about"}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={`block px-4 py-3 rounded-2xl font-bold text-lg transition-colors ${(location === '/' && item === 'Home') || (location === '/shop' && item === 'Shop') || (location === '/about' && item === 'Our Story')
+                        ? 'bg-primary/10 text-primary'
+                        : 'text-secondary hover:bg-black/5'
+                        }`}
+                    >
+                      {item}
                     </Link>
-                  )}
-                  <button onClick={() => logout()} className="text-left font-medium text-destructive flex items-center gap-2">
-                    <LogOut className="w-4 h-4" /> Sign Out
-                  </button>
-                </>
-              ) : (
-                <Link href="/auth" className="font-medium text-primary flex items-center gap-2">
-                  <User className="w-4 h-4" /> Sign In / Register
-                </Link>
-              )}
+                  </motion.div>
+                ))}
+              </div>
+
+              <div className="h-px bg-border/50 w-full rounded-full"></div>
+
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>
+                {user ? (
+                  <div className="bg-background/50 rounded-2xl p-4 border border-border/50">
+                    <div className="flex items-center gap-3 mb-4">
+                      <Avatar className="h-12 w-12 border-2 border-white shadow-sm">
+                        <AvatarImage src={getAvatarUrl(user.username)} alt={user.username} />
+                        <AvatarFallback className="bg-primary/10 text-primary font-bold text-lg">
+                          {user.username.charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <div className="font-bold text-secondary">{user.username}</div>
+                        <div className="text-xs font-medium text-muted-foreground">{user.mobile}</div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      {user.isAdmin && (
+                        <Link href="/admin" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl bg-primary/10 text-primary font-bold w-full transition-colors hover:bg-primary/20">
+                          <ShieldCheck className="w-5 h-5" /> Admin Dashboard
+                        </Link>
+                      )}
+                      <Link href="/profile" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl text-secondary font-bold hover:bg-black/5 transition-colors w-full">
+                        <LayoutDashboard className="w-5 h-5" /> My Dashboard
+                      </Link>
+                      <button onClick={() => { logout(); setMobileMenuOpen(false); }} className="flex items-center gap-3 px-4 py-3 rounded-xl text-destructive font-bold hover:bg-destructive/10 transition-colors w-full text-left">
+                        <LogOut className="w-5 h-5" /> Sign Out
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <Link href="/auth" onClick={() => setMobileMenuOpen(false)} className="flex items-center justify-center gap-2 px-6 py-4 rounded-xl bg-primary text-white font-bold w-full transition-all active:scale-95 shadow-lg shadow-primary/20">
+                    <User className="w-5 h-5" /> Sign In / Register
+                  </Link>
+                )}
+              </motion.div>
             </div>
           </motion.div>
         )}

@@ -30,7 +30,7 @@
 
     --card: 0 0% 100%;
     --card-foreground: 24 30% 15%;
-    
+
     --border: 36 20% 85%;
     --input: 36 20% 85%;
     --ring: 32 45% 45%;
@@ -47,7 +47,12 @@
     background-image: radial-gradient(circle at center, rgba(212, 175, 55, 0.03) 0%, transparent 100%);
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: var(--font-display);
     @apply font-bold tracking-tight text-secondary;
   }
@@ -57,11 +62,11 @@
   .glass-panel {
     @apply bg-white/70 backdrop-blur-xl border border-white/50 shadow-xl shadow-primary/5;
   }
-  
+
   .glow-on-hover {
     @apply transition-all duration-300;
   }
-  
+
   .glow-on-hover:hover {
     box-shadow: 0 0 20px -5px hsl(var(--accent));
   }

@@ -1,0 +1,10 @@
+1. to start the server: FRONTEND + BACKEND
+npm run dev (DEV MODE)
+
+2. in producton MODE
+npm run build
+npm start
+
+
+Username: admin 
+Password: password123

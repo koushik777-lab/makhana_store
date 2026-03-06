@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation } from "wouter";
 import { useForm } from "react-hook-form";
@@ -10,14 +10,11 @@ import { z } from "zod";
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
-  const { login, register, isLoggingIn, isRegistering, user } = useAuth();
+  const [isOtpStep, setIsOtpStep] = useState(false);
+  const { login, isLoggingIn, requestOtp, isRequestingOtp, verifyOtp, isVerifyingOtp, user } = useAuth();
   const [, setLocation] = useLocation();
   const [errorMsg, setErrorMsg] = useState("");
-
-  if (user) {
-    setLocation("/");
-    return null;
-  }
+  const [otpValue, setOtpValue] = useState("");
 
   const loginForm = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
@@ -26,6 +23,16 @@ export default function Auth() {
   const registerForm = useForm<z.infer<typeof insertUserSchema>>({
     resolver: zodResolver(insertUserSchema),
   });
+
+  useEffect(() => {
+    if (user) {
+      setLocation("/");
+    }
+  }, [user, setLocation]);
+
+  if (user) {
+    return null;
+  }
 
   const onLoginSubmit = async (data: z.infer<typeof loginSchema>) => {
     try {
@@ -37,13 +44,33 @@ export default function Auth() {
     }
   };
 
-  const onRegisterSubmit = async (data: z.infer<typeof insertUserSchema>) => {
+  const onRegisterRequest = async (data: z.infer<typeof insertUserSchema>) => {
     try {
       setErrorMsg("");
-      await register(data);
+      await requestOtp(data);
+      setIsOtpStep(true);
+    } catch (err: any) {
+      setErrorMsg(err.message || "Failed to request OTP");
+    }
+  };
+
+  const onOtpSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (otpValue.length !== 6) {
+      setErrorMsg("OTP must be exactly 6 digits");
+      return;
+    }
+
+    try {
+      setErrorMsg("");
+      const formData = registerForm.getValues();
+      await verifyOtp({
+        ...formData,
+        otp: otpValue
+      });
       setLocation("/");
     } catch (err: any) {
-      setErrorMsg(err.message || "Failed to register");
+      setErrorMsg(err.message || "Invalid OTP");
     }
   };
 
@@ -53,20 +80,18 @@ export default function Auth() {
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/20 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob"></div>
       <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-accent/20 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob animation-delay-2000"></div>
 
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-md bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/50 overflow-hidden relative z-10"
       >
         <div className="p-8">
           <div className="text-center mb-8">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent to-primary flex items-center justify-center text-white font-display font-bold text-2xl shadow-lg mx-auto mb-4">
-              M
-            </div>
+            <img src="/blogo.png" alt="Makhana Logo" className="w-16 h-16 object-contain mx-auto mb-4" />
             <h2 className="font-display font-bold text-3xl text-secondary">
-              {isLogin ? "Welcome Back" : "Join the Club"}
+              {isLogin ? "Welcome Back" : isOtpStep ? "Verify Mobile" : "Join the Club"}
             </h2>
             <p className="text-muted-foreground mt-2">
-              {isLogin ? "Sign in to access your orders and favorites." : "Create an account for faster checkout."}
+              {isLogin ? "Sign in to access your orders and favorites." : isOtpStep ? `A 6-digit code has been sent to +91 ${registerForm.getValues("mobile")}` : "Create an account for faster checkout."}
             </p>
           </div>
 
@@ -78,7 +103,7 @@ export default function Auth() {
 
           <AnimatePresence mode="wait">
             {isLogin ? (
-              <motion.form 
+              <motion.form
                 key="login"
                 initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}
                 onSubmit={loginForm.handleSubmit(onLoginSubmit)}
@@ -86,7 +111,7 @@ export default function Auth() {
               >
                 <div>
                   <label className="block text-sm font-medium text-secondary mb-1.5">Username</label>
-                  <input 
+                  <input
                     {...loginForm.register("username")}
                     className="w-full px-4 py-3 rounded-xl bg-background border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none"
                     placeholder="Enter username"
@@ -94,72 +119,112 @@ export default function Auth() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-secondary mb-1.5">Password</label>
-                  <input 
+                  <input
                     type="password"
                     {...loginForm.register("password")}
                     className="w-full px-4 py-3 rounded-xl bg-background border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none"
                     placeholder="••••••••"
                   />
                 </div>
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   disabled={isLoggingIn}
                   className="w-full py-3.5 rounded-xl bg-secondary text-white font-bold hover:bg-secondary/90 shadow-xl shadow-secondary/20 transition-all hover:-translate-y-0.5 disabled:opacity-70 disabled:hover:translate-y-0 flex justify-center items-center"
                 >
                   {isLoggingIn ? <Loader2 className="w-5 h-5 animate-spin" /> : "Sign In"}
                 </button>
               </motion.form>
+            ) : isOtpStep ? (
+              <motion.form
+                key="otp"
+                initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 1.05 }}
+                onSubmit={onOtpSubmit}
+                className="space-y-4"
+              >
+                <div>
+                  <label className="block text-sm font-medium text-secondary mb-1.5 text-center">Enter 6-Digit OTP</label>
+                  <input
+                    type="text"
+                    maxLength={6}
+                    value={otpValue}
+                    onChange={(e) => setOtpValue(e.target.value.replace(/\D/g, ''))}
+                    className="w-full px-4 py-4 text-center text-3xl tracking-widest rounded-xl bg-background border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none font-mono font-bold"
+                    placeholder="------"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={isVerifyingOtp || otpValue.length !== 6}
+                  className="w-full py-3.5 rounded-xl bg-primary text-white font-bold hover:bg-primary/90 shadow-xl shadow-primary/20 transition-all hover:-translate-y-0.5 disabled:opacity-70 disabled:hover:translate-y-0 flex justify-center items-center mt-4"
+                >
+                  {isVerifyingOtp ? <Loader2 className="w-5 h-5 animate-spin" /> : "Verify & Create Account"}
+                </button>
+                <div className="text-center mt-4">
+                  <button
+                    type="button"
+                    onClick={() => { setIsOtpStep(false); setOtpValue(""); }}
+                    className="text-sm text-primary hover:underline font-medium"
+                  >
+                    Change mobile number
+                  </button>
+                </div>
+              </motion.form>
             ) : (
-              <motion.form 
+              <motion.form
                 key="register"
                 initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
-                onSubmit={registerForm.handleSubmit(onRegisterSubmit)}
+                onSubmit={registerForm.handleSubmit(onRegisterRequest)}
                 className="space-y-4"
               >
                 <div>
                   <label className="block text-sm font-medium text-secondary mb-1.5">Username</label>
-                  <input 
+                  <input
                     {...registerForm.register("username")}
                     className="w-full px-4 py-3 rounded-xl bg-background border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none"
                     placeholder="Choose a username"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-secondary mb-1.5">Mobile Number</label>
-                  <input 
+                  <label className="block text-sm font-medium text-secondary mb-1.5 flex justify-between">
+                    Mobile Number <span className="text-muted-foreground text-xs">+91 (India Only)</span>
+                  </label>
+                  <input
                     {...registerForm.register("mobile")}
+                    maxLength={10}
                     className="w-full px-4 py-3 rounded-xl bg-background border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none"
-                    placeholder="Your phone number"
+                    placeholder="10-digit phone number"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-secondary mb-1.5">Password</label>
-                  <input 
+                  <input
                     type="password"
                     {...registerForm.register("password")}
                     className="w-full px-4 py-3 rounded-xl bg-background border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none"
                     placeholder="Create a password"
                   />
                 </div>
-                <button 
-                  type="submit" 
-                  disabled={isRegistering}
+                <button
+                  type="submit"
+                  disabled={isRequestingOtp}
                   className="w-full py-3.5 rounded-xl bg-primary text-white font-bold hover:bg-primary/90 shadow-xl shadow-primary/20 transition-all hover:-translate-y-0.5 disabled:opacity-70 disabled:hover:translate-y-0 flex justify-center items-center mt-2"
                 >
-                  {isRegistering ? <Loader2 className="w-5 h-5 animate-spin" /> : "Create Account"}
+                  {isRequestingOtp ? <Loader2 className="w-5 h-5 animate-spin" /> : "Send OTP"}
                 </button>
               </motion.form>
             )}
           </AnimatePresence>
 
-          <div className="mt-8 text-center">
-            <button 
-              onClick={() => { setIsLogin(!isLogin); setErrorMsg(""); }}
-              className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
-            >
-              {isLogin ? "Don't have an account? Register" : "Already have an account? Sign In"}
-            </button>
-          </div>
+          {!isOtpStep && (
+            <div className="mt-8 text-center">
+              <button
+                onClick={() => { setIsLogin(!isLogin); setErrorMsg(""); }}
+                className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
+              >
+                {isLogin ? "Don't have an account? Register" : "Already have an account? Sign In"}
+              </button>
+            </div>
+          )}
         </div>
       </motion.div>
     </div>

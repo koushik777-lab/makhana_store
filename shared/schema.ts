@@ -1,58 +1,69 @@
-import { pgTable, text, serial, integer, boolean, timestamp, json } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-export const users = pgTable("users", {
-  id: serial("id").primaryKey(),
-  username: text("username").notNull().unique(),
-  mobile: text("mobile").notNull(),
-  password: text("password").notNull(),
-  isAdmin: boolean("is_admin").default(false).notNull(),
+export const insertUserSchema = z.object({
+  username: z.string().min(1, "Username is required"),
+  mobile: z.string().regex(/^[0-9]{10}$/, "Mobile number must be a valid 10-digit Indian number"),
+  password: z.string().min(1, "Password is required"),
 });
 
-export const products = pgTable("products", {
-  id: serial("id").primaryKey(),
-  name: text("name").notNull(),
-  description: text("description").notNull(),
-  price: integer("price").notNull(), // stored in cents/paise
-  image: text("image").notNull(),
-  category: text("category").notNull(),
-  flavor: text("flavor").notNull().default("Classic"),
-  stock: integer("stock").notNull().default(0),
-  featured: boolean("featured").default(false).notNull(),
-  createdAt: timestamp("created_at").defaultNow(),
+export const insertProductSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  description: z.string().min(1, "Description is required"),
+  price: z.number().int().nonnegative("Price cannot be negative"), // stored in cents/paise
+  image: z.string().url("Must be a valid URL"),
+  category: z.string().min(1, "Category is required"),
+  flavor: z.string().default("Classic"),
+  stock: z.number().int().nonnegative().default(0),
+  featured: z.boolean().default(false),
+  bestSeller: z.boolean().default(false),
+  images: z.array(z.string()).default([]),
+  size: z.string().default("325 g"),
+  compareAtPrice: z.number().int().nonnegative("Price cannot be negative").optional(),
 });
 
-export const orders = pgTable("orders", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull(),
-  items: json("items").notNull(), // array of { productId, quantity, price }
-  totalPrice: integer("total_price").notNull(),
-  paymentMethod: text("payment_method").notNull(),
-  paymentStatus: text("payment_status").notNull().default("pending"), // 'pending', 'paid', 'failed'
-  orderStatus: text("order_status").notNull().default("processing"), // 'processing', 'shipped', 'delivered'
-  deliveryAddress: json("delivery_address").notNull(),
-  createdAt: timestamp("created_at").defaultNow(),
+export const insertOrderSchema = z.object({
+  userId: z.string().optional(), // Will be populated by the server session
+  items: z.array(z.object({
+    productId: z.string(),
+    quantity: z.number().int().positive(),
+    price: z.number().int().nonnegative()
+  })).min(1, "At least one item is required"),
+  totalPrice: z.number().int().nonnegative(),
+  paymentMethod: z.string().min(1, "Payment method is required"),
+  deliveryAddress: z.record(z.any())
 });
 
-export const insertUserSchema = createInsertSchema(users).omit({ id: true, isAdmin: true });
-export const insertProductSchema = createInsertSchema(products).omit({ id: true, createdAt: true });
-export const insertOrderSchema = createInsertSchema(orders).omit({ id: true, createdAt: true, paymentStatus: true, orderStatus: true });
-
-// Types
-export type User = typeof users.$inferSelect;
+// Types mapped from Zod (Insert Types)
 export type InsertUser = z.infer<typeof insertUserSchema>;
-export type Product = typeof products.$inferSelect;
 export type InsertProduct = z.infer<typeof insertProductSchema>;
-export type Order = typeof orders.$inferSelect;
 export type InsertOrder = z.infer<typeof insertOrderSchema>;
+
+// Export Types representing the database Models
+export type User = InsertUser & { id: string; isAdmin: boolean };
+export type Product = InsertProduct & { id: string; createdAt: Date };
+export type Order = InsertOrder & {
+  id: string;
+  userId: string;
+  paymentStatus: string;
+  orderStatus: string;
+  createdAt: Date;
+};
 
 export const loginSchema = z.object({
   username: z.string(),
   password: z.string()
 });
+
 export type LoginRequest = z.infer<typeof loginSchema>;
 export type CreateProductRequest = InsertProduct;
 export type UpdateProductRequest = Partial<InsertProduct>;
 export type CreateOrderRequest = InsertOrder;
 export type UpdateOrderStatusRequest = { orderStatus: string; paymentStatus?: string };
+
+// OTP endpoints
+export const requestOtpSchema = insertUserSchema;
+export const verifyOtpSchema = insertUserSchema.extend({
+  otp: z.string().length(6, "OTP must be exactly 6 digits")
+});
+export type RequestOtpRequest = z.infer<typeof requestOtpSchema>;
+export type VerifyOtpRequest = z.infer<typeof verifyOtpSchema>;

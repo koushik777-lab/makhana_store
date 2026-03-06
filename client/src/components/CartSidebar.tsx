@@ -17,14 +17,14 @@ export function CartSidebar() {
       {isOpen && (
         <>
           {/* Backdrop */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             onClick={() => setCartOpen(false)}
             className="fixed inset-0 bg-secondary/40 backdrop-blur-sm z-50"
           />
-          
+
           {/* Sidebar */}
-          <motion.div 
+          <motion.div
             initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
             className="fixed top-0 right-0 h-full w-full max-w-md bg-background shadow-2xl z-50 flex flex-col border-l border-border/50"
@@ -34,7 +34,7 @@ export function CartSidebar() {
               <h2 className="font-display font-bold text-2xl flex items-center gap-2">
                 <ShoppingBag className="w-6 h-6 text-primary" /> Your Cart
               </h2>
-              <button 
+              <button
                 onClick={() => setCartOpen(false)}
                 className="p-2 rounded-full hover:bg-black/5 text-muted-foreground transition-colors"
               >
@@ -51,7 +51,7 @@ export function CartSidebar() {
                   </div>
                   <p className="font-medium text-lg text-secondary">Your cart is empty</p>
                   <p className="text-sm">Looks like you haven't added any crunch yet.</p>
-                  <button 
+                  <button
                     onClick={() => { setCartOpen(false); setLocation("/shop"); }}
                     className="mt-4 px-6 py-3 rounded-full bg-primary text-white font-medium hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 hover:-translate-y-0.5"
                   >
@@ -60,7 +60,7 @@ export function CartSidebar() {
                 </div>
               ) : (
                 items.map((item) => (
-                  <motion.div 
+                  <motion.div
                     layout
                     key={item.product.id}
                     className="flex gap-4 p-4 rounded-2xl bg-white shadow-sm border border-border/50"
@@ -72,9 +72,9 @@ export function CartSidebar() {
                       <div className="flex justify-between items-start">
                         <div>
                           <h4 className="font-bold text-secondary">{item.product.name}</h4>
-                          <p className="text-sm text-muted-foreground">{item.product.flavor}</p>
+                          <p className="text-sm text-muted-foreground">{item.product.flavor} • {item.product.size || "325 g"}</p>
                         </div>
-                        <button 
+                        <button
                           onClick={() => removeItem(item.product.id)}
                           className="text-muted-foreground hover:text-destructive transition-colors p-1"
                         >
@@ -83,14 +83,14 @@ export function CartSidebar() {
                       </div>
                       <div className="flex items-center justify-between mt-4">
                         <div className="flex items-center gap-3 bg-background rounded-full px-2 py-1 border border-border">
-                          <button 
+                          <button
                             onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
                             className="w-6 h-6 rounded-full hover:bg-white flex items-center justify-center text-secondary transition-colors"
                           >
                             <Minus className="w-3 h-3" />
                           </button>
                           <span className="font-medium text-sm w-4 text-center">{item.quantity}</span>
-                          <button 
+                          <button
                             onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
                             className="w-6 h-6 rounded-full hover:bg-white flex items-center justify-center text-secondary transition-colors"
                           >
@@ -98,7 +98,7 @@ export function CartSidebar() {
                           </button>
                         </div>
                         <span className="font-bold text-primary">
-                          ${((item.product.price * item.quantity) / 100).toFixed(2)}
+                          ₹{((item.product.price * item.quantity) / 100).toFixed(2)}
                         </span>
                       </div>
                     </div>
@@ -113,10 +113,10 @@ export function CartSidebar() {
                 <div className="flex justify-between items-center mb-6">
                   <span className="text-muted-foreground font-medium">Subtotal</span>
                   <span className="font-display font-bold text-2xl text-secondary">
-                    ${(getTotal() / 100).toFixed(2)}
+                    ₹{(getTotal() / 100).toFixed(2)}
                   </span>
                 </div>
-                <button 
+                <button
                   onClick={handleCheckout}
                   className="w-full py-4 rounded-xl bg-accent text-secondary font-bold text-lg hover:bg-accent/90 transition-all shadow-xl shadow-accent/20 flex items-center justify-center gap-2 hover:-translate-y-1 active:translate-y-0"
                 >
