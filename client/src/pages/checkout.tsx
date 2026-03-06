@@ -21,6 +21,14 @@ export default function Checkout() {
   const [, setLocation] = useLocation();
   const createOrder = useCreateOrder();
 
+  const { data: config } = useQuery({
+    queryKey: ["/api/config"],
+    queryFn: async () => {
+      const res = await fetch("/api/config");
+      return res.json();
+    }
+  });
+
   const [address, setAddress] = useState({
     street: "", city: "", state: "", zip: ""
   });
@@ -48,7 +56,7 @@ export default function Checkout() {
 
     try {
       // 1. If we have a Razorpay Key in our Environment, Trigger Real Flow!
-      if (import.meta.env.VITE_RAZORPAY_KEY_ID) {
+      if (config?.razorpayKeyId) {
 
         // 1a. Generate secure order_id from backend
         const orderRes = await fetch("/api/orders/create-razorpay-order", {
@@ -61,17 +69,17 @@ export default function Checkout() {
         const orderData = await orderRes.json();
 
         // 1b. Configure Razorpay overlay
-        const logoPath = import.meta.env.VITE_STORE_LOGO;
+        const logoPath = config.storeLogo;
         const absoluteLogo = logoPath
           ? (logoPath.startsWith("http") ? logoPath : `${window.location.origin}${logoPath.startsWith("/") ? "" : "/"}${logoPath}`)
           : "https://images.unsplash.com/photo-1599490659213-e2b9527bd087?auto=format&fit=crop&q=80&w=150";
 
         const options = {
-          key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+          key: config.razorpayKeyId,
           amount: orderData.amount,
           currency: orderData.currency,
-          name: import.meta.env.VITE_STORE_NAME || "Makhana Store",
-          description: import.meta.env.VITE_STORE_DESCRIPTION || "Premium Fox Nuts",
+          name: config.storeName || "Makhana Store",
+          description: "Premium Fox Nuts",
           image: absoluteLogo,
           order_id: orderData.id,
           prefill: {
@@ -245,12 +253,12 @@ export default function Checkout() {
                   <div className="flex items-center gap-3">
                     <div className="w-4 h-4 rounded-full bg-primary border-4 border-white shadow-[0_0_0_1px_hsl(var(--primary))]"></div>
                     <span className="font-bold text-secondary">
-                      {import.meta.env.VITE_RAZORPAY_KEY_ID ? "Razorpay Secure Checkout" : "Mock Razorpay (Test Mode)"}
+                      {config?.razorpayKeyId ? "Razorpay Secure Checkout" : "Mock Razorpay (Test Mode)"}
                     </span>
                   </div>
                   <ShieldCheck className="w-6 h-6 text-primary" />
                 </div>
-                {!import.meta.env.VITE_RAZORPAY_KEY_ID && (
+                {!config?.razorpayKeyId && (
                   <p className="text-sm text-muted-foreground mt-4 italic">
                     Note: Add VITE_RAZORPAY_KEY_ID to .env to enable real payments.
                   </p>

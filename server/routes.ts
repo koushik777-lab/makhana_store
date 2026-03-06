@@ -10,12 +10,8 @@ import fs from "fs";
 import express from "express";
 import Razorpay from "razorpay";
 
-// Initialize Razorpay
-// In development, it will fail gracefully if keys are missing.
-const razorpay = new Razorpay({
-  key_id: process.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_mock',
-  key_secret: process.env.RAZORPAY_KEY_SECRET || 'mock_secret',
-});
+// Razorpay is initialized dynamically inside the route handler
+// to ensure environment variables are fully loaded.
 
 // Ensure uploads directory exists
 const uploadDir = path.join(process.cwd(), 'uploads');
@@ -361,6 +357,12 @@ export async function registerRoutes(
         currency: "INR",
         receipt: `receipt_order_${Date.now()}`
       };
+
+      // Initialize Razorpay dynamically with current environment variables
+      const razorpay = new Razorpay({
+        key_id: process.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_mock',
+        key_secret: process.env.RAZORPAY_KEY_SECRET || 'mock_secret',
+      });
 
       const order = await razorpay.orders.create(options);
       res.status(200).json(order);

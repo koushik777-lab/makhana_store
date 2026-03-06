@@ -13,6 +13,8 @@ declare module "http" {
   }
 }
 
+app.set("trust proxy", 1);
+
 app.use(
   express.json({
     verify: (req, _res, buf) => {
@@ -58,6 +60,15 @@ app.use((req, res, next) => {
   });
 
   next();
+});
+
+// Expose public environment variables to the frontend at runtime
+app.get("/api/config", (req, res) => {
+  res.json({
+    razorpayKeyId: process.env.VITE_RAZORPAY_KEY_ID || "",
+    storeName: process.env.VITE_STORE_NAME || "Makhana Store",
+    storeLogo: process.env.VITE_STORE_LOGO || "",
+  });
 });
 
 (async () => {
