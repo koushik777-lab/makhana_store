@@ -131,6 +131,10 @@ export async function registerRoutes(
         }
       }
 
+      if (!user) {
+        return res.status(500).json({ message: "Failed to create or retrieve user" });
+      }
+
       req.session.userId = user.id;
       res.status(200).json(user);
     } catch (err) {
