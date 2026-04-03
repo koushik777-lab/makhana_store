@@ -12,9 +12,11 @@ export async function connectDB() {
 // Interfaces
 export interface IUser extends Document {
     username: string;
-    mobile: string;
+    mobile?: string;
     password?: string;
     isAdmin: boolean;
+    authProvider: string;
+    firebaseUid?: string;
 }
 
 export interface IProduct extends Document {
@@ -47,9 +49,11 @@ export interface IOrder extends Document {
 // Schemas
 const userSchema = new Schema<IUser>({
     username: { type: String, required: true, unique: true },
-    mobile: { type: String, required: true },
-    password: { type: String, required: true },
+    mobile: { type: String, required: false },
+    password: { type: String, required: false },
     isAdmin: { type: Boolean, default: false },
+    authProvider: { type: String, default: "local" },
+    firebaseUid: { type: String, required: false },
 });
 
 // Create 'id' virtual for frontend compatibility

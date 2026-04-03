@@ -31,7 +31,8 @@ export interface IStorage {
   // Users
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
+  getUserByFirebaseUid(uid: string): Promise<User | undefined>;
+  createUser(user: InsertUser | any): Promise<User>;
 
   // Products
   getProducts(): Promise<Product[]>;
@@ -59,7 +60,12 @@ export class DatabaseStorage implements IStorage {
     return user ? user.toJSON() as unknown as User : undefined;
   }
 
-  async createUser(insertUser: InsertUser): Promise<User> {
+  async getUserByFirebaseUid(uid: string): Promise<User | undefined> {
+    const user = await UserModel.findOne({ firebaseUid: uid });
+    return user ? user.toJSON() as unknown as User : undefined;
+  }
+
+  async createUser(insertUser: InsertUser | any): Promise<User> {
     const user = await UserModel.create(insertUser);
     return user.toJSON() as unknown as User;
   }

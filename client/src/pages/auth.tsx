@@ -7,14 +7,15 @@ import { loginSchema, insertUserSchema } from "@shared/schema";
 import { motion, AnimatePresence } from "framer-motion";
 import { Loader2 } from "lucide-react";
 import { z } from "zod";
+import { auth } from "@/lib/firebase";
+import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { FcGoogle } from "react-icons/fc";
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
-  const [isOtpStep, setIsOtpStep] = useState(false);
-  const { login, isLoggingIn, requestOtp, isRequestingOtp, verifyOtp, isVerifyingOtp, user } = useAuth();
+  const { login, isLoggingIn, register, isRegistering, googleLogin, isGoogleLoggingIn, user } = useAuth();
   const [, setLocation] = useLocation();
   const [errorMsg, setErrorMsg] = useState("");
-  const [otpValue, setOtpValue] = useState("");
 
   const loginForm = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
@@ -44,33 +45,35 @@ export default function Auth() {
     }
   };
 
-  const onRegisterRequest = async (data: z.infer<typeof insertUserSchema>) => {
+  const onRegisterSubmit = async (data: z.infer<typeof insertUserSchema>) => {
     try {
       setErrorMsg("");
-      await requestOtp(data);
-      setIsOtpStep(true);
+      await register(data);
+      setLocation("/");
     } catch (err: any) {
-      setErrorMsg(err.message || "Failed to request OTP");
+      console.error(err);
+      setErrorMsg(err.message || "Failed to register");
     }
   };
 
-  const onOtpSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (otpValue.length !== 6) {
-      setErrorMsg("OTP must be exactly 6 digits");
-      return;
-    }
-
+  const onGoogleLogin = async () => {
     try {
       setErrorMsg("");
-      const formData = registerForm.getValues();
-      await verifyOtp({
-        ...formData,
-        otp: otpValue
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      const firebaseUser = result.user;
+
+      await googleLogin({
+        email: firebaseUser.email || "",
+        displayName: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || "User",
+        uid: firebaseUser.uid,
+        photoURL: firebaseUser.photoURL || undefined
       });
+
       setLocation("/");
     } catch (err: any) {
-      setErrorMsg(err.message || "Invalid OTP");
+      console.error(err);
+      setErrorMsg(err.message || "Google Login failed");
     }
   };
 
@@ -88,10 +91,10 @@ export default function Auth() {
           <div className="text-center mb-8">
             <img src="/blogo.png" alt="Makhana Logo" className="w-16 h-16 object-contain mx-auto mb-4" />
             <h2 className="font-display font-bold text-3xl text-secondary">
-              {isLogin ? "Welcome Back" : isOtpStep ? "Verify Mobile" : "Join the Club"}
+              {isLogin ? "Welcome Back" : "Join the Club"}
             </h2>
             <p className="text-muted-foreground mt-2">
-              {isLogin ? "Sign in to access your orders and favorites." : isOtpStep ? `A 6-digit code has been sent to +91 ${registerForm.getValues("mobile")}` : "Create an account for faster checkout."}
+              {isLogin ? "Sign in to access your orders and favorites." : "Create an account for faster checkout."}
             </p>
           </div>
 
@@ -134,47 +137,12 @@ export default function Auth() {
                   {isLoggingIn ? <Loader2 className="w-5 h-5 animate-spin" /> : "Sign In"}
                 </button>
               </motion.form>
-            ) : isOtpStep ? (
-              <motion.form
-                key="otp"
-                initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 1.05 }}
-                onSubmit={onOtpSubmit}
-                className="space-y-4"
-              >
-                <div>
-                  <label className="block text-sm font-medium text-secondary mb-1.5 text-center">Enter 6-Digit OTP</label>
-                  <input
-                    type="text"
-                    maxLength={6}
-                    value={otpValue}
-                    onChange={(e) => setOtpValue(e.target.value.replace(/\D/g, ''))}
-                    className="w-full px-4 py-4 text-center text-3xl tracking-widest rounded-xl bg-background border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none font-mono font-bold"
-                    placeholder="------"
-                  />
-                </div>
-                <button
-                  type="submit"
-                  disabled={isVerifyingOtp || otpValue.length !== 6}
-                  className="w-full py-3.5 rounded-xl bg-primary text-white font-bold hover:bg-primary/90 shadow-xl shadow-primary/20 transition-all hover:-translate-y-0.5 disabled:opacity-70 disabled:hover:translate-y-0 flex justify-center items-center mt-4"
-                >
-                  {isVerifyingOtp ? <Loader2 className="w-5 h-5 animate-spin" /> : "Verify & Create Account"}
-                </button>
-                <div className="text-center mt-4">
-                  <button
-                    type="button"
-                    onClick={() => { setIsOtpStep(false); setOtpValue(""); }}
-                    className="text-sm text-primary hover:underline font-medium"
-                  >
-                    Change mobile number
-                  </button>
-                </div>
-              </motion.form>
             ) : (
               <motion.form
                 key="register"
                 initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
-                onSubmit={registerForm.handleSubmit(onRegisterRequest)}
-                className="space-y-4"
+                onSubmit={registerForm.handleSubmit(onRegisterSubmit)}
+                className="space-y-5"
               >
                 <div>
                   <label className="block text-sm font-medium text-secondary mb-1.5">Username</label>
@@ -182,17 +150,6 @@ export default function Auth() {
                     {...registerForm.register("username")}
                     className="w-full px-4 py-3 rounded-xl bg-background border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none"
                     placeholder="Choose a username"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-secondary mb-1.5 flex justify-between">
-                    Mobile Number <span className="text-muted-foreground text-xs">+91 (India Only)</span>
-                  </label>
-                  <input
-                    {...registerForm.register("mobile")}
-                    maxLength={10}
-                    className="w-full px-4 py-3 rounded-xl bg-background border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all outline-none"
-                    placeholder="10-digit phone number"
                   />
                 </div>
                 <div>
@@ -206,25 +163,50 @@ export default function Auth() {
                 </div>
                 <button
                   type="submit"
-                  disabled={isRequestingOtp}
+                  disabled={isRegistering}
                   className="w-full py-3.5 rounded-xl bg-primary text-white font-bold hover:bg-primary/90 shadow-xl shadow-primary/20 transition-all hover:-translate-y-0.5 disabled:opacity-70 disabled:hover:translate-y-0 flex justify-center items-center mt-2"
                 >
-                  {isRequestingOtp ? <Loader2 className="w-5 h-5 animate-spin" /> : "Send OTP"}
+                  {isRegistering ? <Loader2 className="w-5 h-5 animate-spin" /> : "Create Account"}
                 </button>
               </motion.form>
             )}
           </AnimatePresence>
 
-          {!isOtpStep && (
-            <div className="mt-8 text-center">
-              <button
-                onClick={() => { setIsLogin(!isLogin); setErrorMsg(""); }}
-                className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
-              >
-                {isLogin ? "Don't have an account? Register" : "Already have an account? Sign In"}
-              </button>
+          <div className="mt-8">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-border"></span>
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-white/80 px-2 text-muted-foreground">Or continue with</span>
+              </div>
             </div>
-          )}
+
+            <button
+              type="button"
+              onClick={onGoogleLogin}
+              disabled={isGoogleLoggingIn}
+              className="mt-6 flex w-full items-center justify-center gap-3 rounded-xl border border-border bg-white px-4 py-3.5 text-sm font-semibold text-secondary shadow-sm hover:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary transition-all disabled:opacity-70"
+            >
+              {isGoogleLoggingIn ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <>
+                  <FcGoogle className="w-5 h-5" />
+                  Sign in with Google
+                </>
+              )}
+            </button>
+          </div>
+
+          <div className="mt-8 text-center">
+            <button
+              onClick={() => { setIsLogin(!isLogin); setErrorMsg(""); }}
+              className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
+            >
+              {isLogin ? "Don't have an account? Register" : "Already have an account? Sign In"}
+            </button>
+          </div>
         </div>
       </motion.div>
     </div>

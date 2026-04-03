@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, buildUrl } from "@shared/routes";
-import { InsertUser, LoginRequest, User, RequestOtpRequest, VerifyOtpRequest } from "@shared/schema";
+import { InsertUser, LoginRequest, User } from "@shared/schema";
 
 export function useAuth() {
   const queryClient = useQueryClient();
@@ -57,32 +57,17 @@ export function useAuth() {
     },
   });
 
-  const requestOtpMutation = useMutation({
-    mutationFn: async (data: RequestOtpRequest) => {
-      const res = await fetch("/api/auth/register/request-otp", {
+  const googleLoginMutation = useMutation({
+    mutationFn: async (data: { email: string; displayName: string; uid: string; photoURL?: string }) => {
+      const res = await fetch("/api/auth/google", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
+        credentials: "include",
       });
       if (!res.ok) {
         const err = await res.json();
-        throw new Error(err.message || "Failed to request OTP");
-      }
-      return await res.json();
-    }
-  });
-
-  const verifyOtpMutation = useMutation({
-    mutationFn: async (data: VerifyOtpRequest) => {
-      const res = await fetch("/api/auth/register/verify-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-        credentials: "include", // Essential for setting the session cookie
-      });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.message || "Failed to verify OTP");
+        throw new Error(err.message || "Google Login failed");
       }
       return api.auth.register.responses[201].parse(await res.json());
     },
@@ -112,10 +97,8 @@ export function useAuth() {
     isLoggingIn: loginMutation.isPending,
     register: registerMutation.mutateAsync,
     isRegistering: registerMutation.isPending,
-    requestOtp: requestOtpMutation.mutateAsync,
-    isRequestingOtp: requestOtpMutation.isPending,
-    verifyOtp: verifyOtpMutation.mutateAsync,
-    isVerifyingOtp: verifyOtpMutation.isPending,
+    googleLogin: googleLoginMutation.mutateAsync,
+    isGoogleLoggingIn: googleLoginMutation.isPending,
     logout: logoutMutation.mutateAsync,
   };
 }

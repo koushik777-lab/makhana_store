@@ -2,7 +2,6 @@ import { z } from "zod";
 
 export const insertUserSchema = z.object({
   username: z.string().min(1, "Username is required"),
-  mobile: z.string().regex(/^[0-9]{10}$/, "Mobile number must be a valid 10-digit Indian number"),
   password: z.string().min(1, "Password is required"),
 });
 
@@ -59,11 +58,3 @@ export type CreateProductRequest = InsertProduct;
 export type UpdateProductRequest = Partial<InsertProduct>;
 export type CreateOrderRequest = InsertOrder;
 export type UpdateOrderStatusRequest = { orderStatus: string; paymentStatus?: string };
-
-// OTP endpoints
-export const requestOtpSchema = insertUserSchema;
-export const verifyOtpSchema = insertUserSchema.extend({
-  otp: z.string().length(6, "OTP must be exactly 6 digits")
-});
-export type RequestOtpRequest = z.infer<typeof requestOtpSchema>;
-export type VerifyOtpRequest = z.infer<typeof verifyOtpSchema>;

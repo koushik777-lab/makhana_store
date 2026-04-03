@@ -19,8 +19,6 @@ if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
 
-// In-memory OTP store for Registration (Key: mobile string, Value: { otp, expiresAt })
-const otpStore = new Map<string, { otp: string, expiresAt: number }>();
 
 // Configure multer
 const upload = multer({
@@ -63,115 +61,8 @@ export async function registerRoutes(
   // ---------------------------------------------------------
   // Auth Routes
   // ---------------------------------------------------------
-  app.post("/api/auth/register/request-otp", async (req, res) => {
-    try {
-      const input = api.auth.register.input.parse(req.body);
-
-      // Check if username already taken
-      const existingUser = await storage.getUserByUsername(input.username);
-      if (existingUser) {
-        return res.status(400).json({ message: "Username already exists" });
-      }
-
-      // Generate a random 6 digit OTP
-      const otp = Math.floor(100000 + Math.random() * 900000).toString();
-
-      // Store in memory for 10 minutes
-      otpStore.set(input.mobile, {
-        otp,
-        expiresAt: Date.now() + 10 * 60 * 1000 // 10 mins
-      });
-
-      // Always log in the terminal so development is never blocked
-      console.log(`\n======================================`);
-      console.log(`💬 SMS TARGET: +91 ${input.mobile}`);
-      console.log(`Hi ${input.username}, your Makhana checkout verification code is: ${otp}`);
-      if (!process.env.FAST2SMS_API_KEY) console.log(`(Add FAST2SMS_API_KEY to .env to send real SMS)`);
-      console.log(`======================================\n`);
-
-      // Send Real SMS if API Key exists
-      if (process.env.FAST2SMS_API_KEY) {
-        try {
-          const response = await fetch("https://www.fast2sms.com/dev/bulkV2", {
-            method: "POST",
-            headers: {
-              "authorization": process.env.FAST2SMS_API_KEY,
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              route: "otp",
-              variables_values: otp,
-              numbers: input.mobile,
-            })
-          });
-          const data = await response.json();
-          console.log("Fast2SMS API Response:", data);
-        } catch (smsError) {
-          console.error("Failed to send real SMS:", smsError);
-        }
-      }
-
-      res.status(200).json({ message: "OTP processed successfully" });
-    } catch (err) {
-      if (err instanceof z.ZodError) {
-        return res.status(400).json({ message: err.errors[0].message });
-      }
-      res.status(500).json({ message: "Internal server error" });
-    }
-  });
-
-  app.post("/api/auth/register/verify-otp", async (req, res) => {
-    try {
-      // Must include OTP inside the request body alongside original credentials
-      // Re-use register schema + OTP field
-      const verifySchema = z.object({
-        username: z.string(),
-        mobile: z.string(),
-        password: z.string(),
-        otp: z.string()
-      });
-      const input = verifySchema.parse(req.body);
-
-      const record = otpStore.get(input.mobile);
-      if (!record) {
-        return res.status(400).json({ message: "No active OTP session found or expired." });
-      }
-
-      if (Date.now() > record.expiresAt) {
-        otpStore.delete(input.mobile);
-        return res.status(400).json({ message: "OTP has expired. Please try again." });
-      }
-
-      if (record.otp !== input.otp) {
-        return res.status(400).json({ message: "Invalid OTP provided." });
-      }
-
-      // We had a successful match, clean up the store
-      otpStore.delete(input.mobile);
-
-      // Finalize check to avoid race conditions with username
-      const existingUser = await storage.getUserByUsername(input.username);
-      if (existingUser) {
-        return res.status(400).json({ message: "Username already exists" });
-      }
-
-      const user = await storage.createUser({
-        username: input.username,
-        mobile: input.mobile,
-        password: input.password
-      });
-      req.session.userId = user.id;
-      res.status(201).json(user);
-    } catch (err) {
-      if (err instanceof z.ZodError) {
-        return res.status(400).json({ message: err.errors[0].message });
-      }
-      res.status(500).json({ message: "Internal server error" });
-    }
-  });
-
   app.post(api.auth.register.path, async (req, res) => {
-    // Keep this route as a fallback, but the frontend will now call request-otp -> verify-otp
+    // Normal Username and Password registration
     try {
       const input = api.auth.register.input.parse(req.body);
 
@@ -204,6 +95,47 @@ export async function registerRoutes(
       res.status(200).json(user);
     } catch (err) {
       res.status(400).json({ message: "Invalid request" });
+    }
+  });
+
+  app.post("/api/auth/google", async (req, res) => {
+    try {
+      const { email, displayName, uid } = req.body;
+      if (!email || !uid) {
+        return res.status(400).json({ message: "Invalid payload from Google" });
+      }
+
+      // 1. Check if user exists by Firebase UID
+      let user = await storage.getUserByFirebaseUid(uid);
+
+      if (!user) {
+        // 2. Check if user already exists with this email address as their username
+        user = await storage.getUserByUsername(email);
+
+        if (user) {
+          // Link Firebase UID to existing account if found
+          // (Assuming create/update functionality exists - but since we added passing 'any' to createUser, we might need a direct DB update. For simplicity, we can do it via Mongoose here, or just trust storage)
+          // Since there is no update User in storage, let's just use Mongoose
+          const { UserModel } = await import("./models");
+          const dbUser = await UserModel.findByIdAndUpdate(user.id, { firebaseUid: uid }, { new: true });
+          if (dbUser) user = dbUser.toJSON() as any;
+        } else {
+          // 3. Create novel user
+          user = await storage.createUser({
+            username: email,
+            authProvider: "google",
+            firebaseUid: uid,
+            password: "", // No password
+            isAdmin: false
+          });
+        }
+      }
+
+      req.session.userId = user.id;
+      res.status(200).json(user);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: "Google Auth internal server error" });
     }
   });
 
