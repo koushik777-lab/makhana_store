@@ -13,7 +13,6 @@ export function Navbar() {
   const { items, toggleCart } = useCart();
   const { items: wishlistItems, setIsOpen: setWishlistOpen } = useWishlist();
   const [location] = useLocation();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const itemCount = items.reduce((acc, item) => acc + item.quantity, 0);
   const wishlistCount = wishlistItems.length;
@@ -174,87 +173,11 @@ export function Navbar() {
             </Link>
           )}
 
-          <motion.button
-            whileTap={{ scale: 0.9 }}
-            className="md:hidden p-2 text-secondary bg-surface/50 border border-surface-highest/40 rounded-full hover:bg-surface shadow-sm"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            <Menu className="w-6 h-6" />
-          </motion.button>
+
         </div>
       </motion.div>
 
-      <AnimatePresence>
-        {mobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -20, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -20, scale: 0.95 }}
-            transition={{ type: "spring", stiffness: 300, damping: 25 }}
-            className="md:hidden fixed top-[88px] left-4 right-4 z-40 bg-white/90 backdrop-blur-2xl border border-white/50 rounded-3xl shadow-2xl overflow-hidden"
-          >
-            <div className="px-6 py-8 flex flex-col gap-6">
-              <div className="flex flex-col gap-2">
-                {["Home", "Shop", "Our Story"].map((item, i) => (
-                  <motion.div
-                    key={item}
-                    initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.1 }}
-                  >
-                    <Link
-                      href={item === "Home" ? "/" : item === "Shop" ? "/shop" : "/about"}
-                      onClick={() => setMobileMenuOpen(false)}
-                      className={`block px-4 py-3 rounded-2xl font-bold text-lg transition-colors ${(location === '/' && item === 'Home') || (location === '/shop' && item === 'Shop') || (location === '/about' && item === 'Our Story')
-                        ? 'bg-primary/10 text-primary'
-                        : 'text-secondary hover:bg-black/5'
-                        }`}
-                    >
-                      {item}
-                    </Link>
-                  </motion.div>
-                ))}
-              </div>
 
-              <div className="h-px bg-border/50 w-full rounded-full"></div>
-
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>
-                {user ? (
-                  <div className="bg-background/50 rounded-2xl p-4 border border-border/50">
-                    <div className="flex items-center gap-3 mb-4">
-                      <Avatar className="h-12 w-12 border-2 border-white shadow-sm">
-                        <AvatarImage src={getAvatarUrl(user.username)} alt={user.username} />
-                        <AvatarFallback className="bg-primary/10 text-primary font-bold text-lg">
-                          {user.username.charAt(0).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <div className="font-bold text-secondary">{user.username}</div>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      {user.isAdmin && (
-                        <Link href="/admin" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl bg-primary/10 text-primary font-bold w-full transition-colors hover:bg-primary/20">
-                          <ShieldCheck className="w-5 h-5" /> Admin Dashboard
-                        </Link>
-                      )}
-                      <Link href="/profile" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl text-secondary font-bold hover:bg-black/5 transition-colors w-full">
-                        <LayoutDashboard className="w-5 h-5" /> My Dashboard
-                      </Link>
-                      <button onClick={() => { logout(); setMobileMenuOpen(false); }} className="flex items-center gap-3 px-4 py-3 rounded-xl text-destructive font-bold hover:bg-destructive/10 transition-colors w-full text-left">
-                        <LogOut className="w-5 h-5" /> Sign Out
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <Link href="/auth" onClick={() => setMobileMenuOpen(false)} className="flex items-center justify-center gap-2 px-6 py-4 rounded-xl bg-primary text-white font-bold w-full transition-all active:scale-95 shadow-lg shadow-primary/20">
-                    <User className="w-5 h-5" /> Sign In / Register
-                  </Link>
-                )}
-              </motion.div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </header>
   );
 }
