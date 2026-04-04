@@ -7,33 +7,37 @@
 @layer base {
   :root {
     --font-sans: 'Plus Jakarta Sans', sans-serif;
-    --font-display: 'Outfit', sans-serif;
+    --font-display: 'Plus Jakarta Sans', sans-serif;
 
-    /* Cream / Soft Beige Background */
-    --background: 42 60% 97%;
-    --foreground: 24 30% 15%;
+    /* The Earthy Artisan Palette */
+    --background: 28 100% 97%; /* #fff8f2 */
+    --foreground: 36 9% 11%; /* #1d1b18 */
 
-    /* Light Brown / Caramel */
-    --primary: 32 45% 45%;
-    --primary-foreground: 42 60% 97%;
+    --primary: 19 100% 33%; /* #a73400 */
+    --primary-foreground: 0 0% 100%;
 
-    /* Richer Brown for secondary */
-    --secondary: 24 30% 25%;
-    --secondary-foreground: 42 60% 97%;
+    --secondary: 22 38% 37%; /* #81543a */
+    --secondary-foreground: 0 0% 100%;
 
-    /* Gold Accent */
-    --accent: 43 85% 55%;
-    --accent-foreground: 24 30% 15%;
+    --accent: 18 85% 43%; /* #cc4811 */
+    --accent-foreground: 0 0% 100%;
 
-    --muted: 36 30% 90%;
-    --muted-foreground: 24 15% 45%;
+    --muted: 30 29% 93%; /* #f3ede7 */
+    --muted-foreground: 16 22% 30%; /* #594139 */
 
     --card: 0 0% 100%;
-    --card-foreground: 24 30% 15%;
+    --card-foreground: 36 9% 11%;
 
-    --border: 36 20% 85%;
-    --input: 36 20% 85%;
-    --ring: 32 45% 45%;
+    --border: 15 17% 48%; /* #8d7168 */
+    --input: 15 44% 80%; /* #e1bfb4 */
+    --ring: 19 100% 33%;
+
+    /* Surface Tokens for "No-Line" Rule */
+    --surface-lowest: 0 0% 100%; /* #ffffff */
+    --surface-low: 28 50% 95%; /* #f9f2ec */
+    --surface-container: 28 29% 93%; /* #f3ede7 */
+    --surface-high: 28 24% 90%; /* #ede7e1 */
+    --surface-highest: 28 19% 88%; /* #e8e1db */
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
@@ -44,7 +48,7 @@
   body {
     @apply bg-background text-foreground antialiased selection:bg-accent selection:text-accent-foreground;
     font-family: var(--font-sans);
-    background-image: radial-gradient(circle at center, rgba(212, 175, 55, 0.03) 0%, transparent 100%);
+    background-image: radial-gradient(circle at center, rgba(167, 52, 0, 0.02) 0%, transparent 100%);
   }
 
   h1,

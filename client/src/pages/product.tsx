@@ -58,7 +58,7 @@ export default function ProductDetail() {
     };
 
     return (
-        <div className="min-h-screen bg-white">
+        <div className="min-h-screen bg-background">
             <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-24">
 
                 <Link href="/shop" className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors mb-8 text-sm font-bold uppercase tracking-wider">
@@ -72,10 +72,8 @@ export default function ProductDetail() {
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="w-full aspect-[4/5] sm:aspect-square bg-secondary rounded-[2.5rem] overflow-hidden shadow-2xl relative flex items-center justify-center p-8 group"
+                            className="w-full aspect-[4/5] sm:aspect-square bg-surface-low rounded-[2.5rem] overflow-hidden shadow-[0_8px_32px_-8px_rgba(27,28,26,0.05)] relative flex items-center justify-center p-8 group"
                         >
-                            {/* Decorative background blob */}
-                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 h-3/4 bg-white/5 rounded-full blur-[80px]" />
 
                             <motion.img
                                 key={displayImage}
@@ -95,9 +93,9 @@ export default function ProductDetail() {
 
                             <button
                                 onClick={() => toggleItem(product)}
-                                className="absolute top-6 right-6 z-20 p-3 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full transition-all duration-300"
+                                className="absolute top-6 right-6 z-20 p-3 bg-surface hover:bg-surface-high rounded-full transition-all duration-300 shadow-sm"
                             >
-                                <Heart className={`w-6 h-6 ${isWishlisted ? "fill-red-500 text-red-500" : "text-white"}`} />
+                                <Heart className={`w-6 h-6 ${isWishlisted ? "fill-red-500 text-red-500" : "text-secondary"}`} />
                             </button>
                         </motion.div>
 
@@ -108,7 +106,7 @@ export default function ProductDetail() {
                                     <button
                                         key={i}
                                         onClick={() => setActiveImage(img)}
-                                        className={`w-24 h-24 rounded-2xl overflow-hidden flex-shrink-0 border-[3px] transition-all bg-[#f4f4f4] ${displayImage === img ? 'border-primary shadow-lg' : 'border-transparent opacity-60 hover:opacity-100'}`}
+                                        className={`w-24 h-24 rounded-2xl overflow-hidden flex-shrink-0 border-[3px] transition-all bg-surface-low ${displayImage === img ? 'border-primary shadow-sm' : 'border-transparent opacity-60 hover:opacity-100'}`}
                                     >
                                         <img src={img} alt={`Thumbnail ${i}`} className="w-full h-full object-cover mix-blend-multiply" />
                                     </button>
@@ -153,7 +151,7 @@ export default function ProductDetail() {
                             <div className="flex items-center gap-12">
                                 <span className="text-base font-bold text-secondary w-20">Quantity :</span>
                                 <div className="flex items-center gap-4">
-                                    <button className="px-6 py-3 bg-secondary text-white font-bold rounded-xl border-2 border-secondary shadow-md">
+                                    <button className="px-6 py-3 bg-surface-highest text-foreground font-bold rounded-full  shadow-sm">
                                         {product.size || "325 g"}
                                     </button>
                                 </div>
@@ -169,19 +167,19 @@ export default function ProductDetail() {
                         >
                             <div className="flex items-center gap-12">
                                 <span className="text-base font-bold text-secondary w-20">Items :</span>
-                                <div className="flex items-center border-2 border-border/60 rounded-xl h-14 bg-white shadow-sm overflow-hidden">
+                                <div className="flex items-center rounded-full h-14 bg-surface shadow-sm overflow-hidden border border-surface-highest">
                                     <button
                                         onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                                        className="w-14 h-full flex items-center justify-center hover:bg-muted/50 transition-colors text-secondary"
+                                        className="w-14 h-full flex items-center justify-center hover:bg-surface-highest transition-colors text-secondary"
                                     >
                                         <Minus className="w-4 h-4" />
                                     </button>
-                                    <div className="w-14 h-full flex items-center justify-center font-bold text-secondary text-lg border-x-2 border-border/60">
+                                    <div className="w-14 h-full flex items-center justify-center font-bold text-secondary text-lg border-x border-surface-highest">
                                         {quantity}
                                     </div>
-                                    <button
+                                <button
                                         onClick={() => setQuantity(quantity + 1)}
-                                        className="w-14 h-full flex items-center justify-center hover:bg-muted/50 transition-colors text-secondary"
+                                        className="w-14 h-full flex items-center justify-center hover:bg-surface-highest transition-colors text-secondary"
                                     >
                                         <Plus className="w-4 h-4" />
                                     </button>
@@ -192,14 +190,14 @@ export default function ProductDetail() {
                                 <button
                                     onClick={handleAddToCart}
                                     disabled={product.stock === 0}
-                                    className="flex-1 py-5 rounded-xl bg-secondary text-white font-black text-lg hover:bg-secondary/90 transition-all shadow-lg active:scale-[0.98] disabled:opacity-50"
+                                    className="flex-1 py-5 rounded-full bg-primary text-white font-black text-lg hover:bg-primary/90 transition-all shadow-[0_8px_32px_-8px_rgba(27,28,26,0.15)] active:scale-[0.98] disabled:opacity-50"
                                 >
                                     Add to cart
                                 </button>
                                 <button
                                     onClick={handleBuyNow}
                                     disabled={product.stock === 0}
-                                    className="flex-1 py-5 rounded-xl bg-accent/20 text-accent font-black text-lg hover:bg-accent hover:text-secondary transition-all shadow-md active:scale-[0.98] disabled:opacity-50"
+                                    className="flex-1 py-5 rounded-full bg-surface-highest text-secondary font-black text-lg hover:bg-secondary hover:text-white transition-all shadow-sm active:scale-[0.98] disabled:opacity-50"
                                 >
                                     Buy It Now
                                 </button>

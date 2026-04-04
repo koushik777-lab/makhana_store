@@ -12,6 +12,7 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { CartSidebar } from "@/components/CartSidebar";
 import { WishlistSidebar } from "@/components/WishlistSidebar";
+import { BottomNav } from "@/components/BottomNav";
 
 import Home from "@/pages/home";
 import Shop from "@/pages/shop";
@@ -46,6 +47,7 @@ function Router() {
       <Navbar />
       <CartSidebar />
       <WishlistSidebar />
+      <BottomNav />
       <main className="flex-1">
         <Switch>
           <Route path="/" component={Home} />

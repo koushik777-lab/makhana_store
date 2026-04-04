@@ -58,7 +58,7 @@ export default function Shop() {
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Mobile Filter Toggle */}
           <button
-            className="lg:hidden flex items-center justify-center gap-2 w-full py-3 bg-white border border-border rounded-xl font-bold text-secondary"
+            className="lg:hidden flex items-center justify-center gap-2 w-full py-4 bg-surface-lowest rounded-full font-bold text-secondary shadow-sm"
             onClick={() => setShowFiltersMobile(!showFiltersMobile)}
           >
             <Filter className="w-5 h-5" /> {showFiltersMobile ? "Hide Filters" : "Show Filters"}
@@ -66,7 +66,7 @@ export default function Shop() {
 
           {/* Sidebar Filters */}
           <div className={`lg:w-1/4 flex-shrink-0 space-y-8 ${showFiltersMobile ? 'block' : 'hidden lg:block'}`}>
-            <div className="bg-white p-6 rounded-3xl border border-border sticky top-24">
+            <div className="bg-surface p-6 rounded-[2rem] sticky top-24 shadow-sm">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="font-display font-bold text-xl text-secondary flex items-center gap-2">
                   <Filter className="w-5 h-5 text-primary" /> Filters
@@ -87,8 +87,8 @@ export default function Shop() {
                       key={category}
                       onClick={() => setActiveCategory(category)}
                       className={`block w-full text-left px-4 py-2 rounded-xl text-sm transition-colors ${activeCategory === category
-                          ? "bg-primary/10 text-primary font-bold"
-                          : "text-muted-foreground hover:bg-muted font-medium"
+                          ? "bg-surface-highest text-foreground font-bold"
+                          : "text-muted-foreground hover:bg-surface-low font-medium"
                         }`}
                     >
                       {category}
@@ -98,7 +98,7 @@ export default function Shop() {
               </div>
 
               {/* Advanced Filters */}
-              <div className="mb-8 border-t border-border pt-6">
+              <div className="mb-8 border-t border-surface-highest pt-6">
                 <h4 className="font-bold text-secondary mb-4 text-sm uppercase tracking-wider">Price Range</h4>
                 <div className="space-y-4">
                   <input
@@ -117,10 +117,10 @@ export default function Shop() {
                 </div>
               </div>
 
-              <div className="border-t border-border pt-6">
+              <div className="border-t border-surface-highest pt-6">
                 <h4 className="font-bold text-secondary mb-4 text-sm uppercase tracking-wider">Preferences</h4>
                 <label className="flex items-center gap-3 cursor-pointer group">
-                  <div className={`w-6 h-6 rounded flex items-center justify-center border-2 transition-colors ${showBestSellersOnly ? 'bg-primary border-primary' : 'border-border group-hover:border-primary/50'}`}>
+                  <div className={`w-6 h-6 rounded-md flex items-center justify-center border-2 transition-colors ${showBestSellersOnly ? 'bg-primary border-primary' : 'border-surface-highest group-hover:border-primary/50'}`}>
                     {showBestSellersOnly && <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
                   </div>
                   <input
@@ -139,7 +139,7 @@ export default function Shop() {
                   setMaxPrice(500);
                   setShowBestSellersOnly(false);
                 }}
-                className="w-full mt-8 py-3 rounded-xl border border-destructive/20 text-destructive font-bold hover:bg-destructive/5 transition-colors text-sm"
+                className="w-full mt-8 py-3 rounded-full bg-surface-low text-secondary font-bold hover:bg-surface-highest transition-colors text-sm"
               >
                 Reset Filters
               </button>
@@ -161,7 +161,7 @@ export default function Shop() {
                 ))}
               </div>
             ) : filteredProducts.length === 0 ? (
-              <div className="bg-white rounded-3xl border border-border p-12 text-center">
+              <div className="bg-surface-lowest rounded-[2rem] p-12 text-center">
                 <div className="w-20 h-20 bg-muted/50 rounded-full flex items-center justify-center mx-auto mb-6">
                   <Filter className="w-10 h-10 text-muted-foreground/50" />
                 </div>
@@ -173,7 +173,7 @@ export default function Shop() {
                     setMaxPrice(500);
                     setShowBestSellersOnly(false);
                   }}
-                  className="px-6 py-3 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-colors inline-block"
+                  className="px-6 py-3 bg-surface-highest text-foreground font-bold rounded-full hover:bg-primary hover:text-white transition-colors inline-block"
                 >
                   Clear Filters
                 </button>

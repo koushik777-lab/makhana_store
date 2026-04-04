@@ -13,9 +13,9 @@ export default function Home() {
       {/* Hero Section */}
       <section className="relative overflow-hidden pt-20 pb-32 lg:pt-32 lg:pb-40 min-h-[90vh] flex items-center">
         <div className="absolute inset-0 z-0">
-          {/* landing page hero abstract beige background texture */}
-          <img src="https://images.unsplash.com/photo-1604871000636-074fa5117945?w=1920&h=1080&fit=crop" className="w-full h-full object-cover opacity-10" alt="Background pattern" />
-          <div className="absolute inset-0 bg-gradient-to-b from-background via-background/80 to-background"></div>
+          <div className="absolute inset-0 bg-surface"></div>
+          {/* subtle earthy grain or gradient */}
+          <div className="absolute inset-0 bg-gradient-to-br from-surface to-surface-low mix-blend-multiply opacity-80"></div>
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
@@ -28,17 +28,6 @@ export default function Home() {
               transition={{ duration: 0.8, ease: "easeOut" }}
               className="text-left w-full"
             >
-              <motion.div
-                initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/60 backdrop-blur-sm border border-primary/20 text-primary font-medium mb-8 text-sm shadow-sm"
-              >
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
-                </span>
-                New Flavors Dropped
-              </motion.div>
-
               <motion.h1
                 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.1 }}
                 className="font-display font-black text-5xl md:text-7xl lg:text-8xl text-secondary tracking-tight mb-6 leading-[1.1]"
@@ -78,7 +67,7 @@ export default function Home() {
             </motion.div>
 
             {/* Right Content - Funky Floating Elements */}
-            <div className="relative h-[400px] lg:h-[600px] w-full hidden md:block">
+            <div className="relative h-[480px] sm:h-[500px] lg:h-[600px] w-full mt-8 lg:mt-0">
               {/* Center Main Product Blob */}
               <motion.div
                 initial={{ scale: 0, rotate: -20 }}
@@ -92,21 +81,21 @@ export default function Home() {
                 initial={{ y: 100, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ type: "spring", bounce: 0.4, duration: 1.2, delay: 0.3 }}
-                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 w-64 h-64 lg:w-80 lg:h-80"
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 w-56 h-56 sm:w-72 sm:h-72 lg:w-96 lg:h-96"
               >
                 <img
                   src="/makhana_main.png"
                   alt="Premium Makhana Bowl"
-                  className="w-full h-full object-cover rounded-full shadow-2xl border-8 border-white"
+                  className="w-full h-full object-cover rounded-full shadow-2xl border-4 sm:border-8 border-white"
                 />
                 {/* Floating Price Tag */}
                 <motion.div
                   animate={{ y: [-10, 10, -10] }}
                   transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
-                  className="absolute -bottom-6 -right-6 bg-white p-4 rounded-2xl shadow-xl border border-border/50 rotate-12"
+                  className="absolute -bottom-2 -right-2 sm:-bottom-8 sm:-right-8 bg-white p-3 sm:p-5 rounded-2xl shadow-xl border border-border/30 rotate-12 z-20"
                 >
-                  <p className="text-secondary font-bold text-sm uppercase tracking-wider">Starting at</p>
-                  <p className="text-primary font-black text-2xl">₹99</p>
+                  <p className="text-secondary font-bold text-[10px] sm:text-xs uppercase tracking-wider">Starting at</p>
+                  <p className="text-primary font-black text-xl sm:text-3xl">₹99</p>
                 </motion.div>
               </motion.div>
 
@@ -118,11 +107,11 @@ export default function Home() {
                   scale: { type: "spring", delay: 0.5 },
                   y: { repeat: Infinity, duration: 5, ease: "easeInOut", delay: 0.5 }
                 }}
-                className="absolute top-[10%] left-[10%] z-20 w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-lg"
+                className="absolute top-[8%] left-[2%] sm:left-[10%] z-20 w-24 h-24 sm:w-36 sm:h-36 rounded-full overflow-hidden border-4 border-white shadow-xl"
               >
                 <img src="/makhana_peri_peri.png" className="w-full h-full object-cover" alt="Spicy Makhana" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end justify-center pb-3">
-                  <span className="text-white font-bold text-xs uppercase tracking-wider">Peri Peri</span>
+                  <span className="text-white font-bold text-[10px] sm:text-xs uppercase tracking-wider">Peri Peri</span>
                 </div>
               </motion.div>
 
@@ -134,11 +123,11 @@ export default function Home() {
                   scale: { type: "spring", delay: 0.7 },
                   y: { repeat: Infinity, duration: 6, ease: "easeInOut", delay: 0.7 }
                 }}
-                className="absolute top-[20%] right-[5%] z-20 w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-lg"
+                className="absolute top-[18%] right-[2%] sm:right-[5%] z-20 w-20 h-20 sm:w-28 sm:h-28 rounded-full overflow-hidden border-4 border-white shadow-xl"
               >
                 <img src="/makhana_cheese.png" className="w-full h-full object-cover" alt="Cheese Makhana" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end justify-center pb-2">
-                  <span className="text-white font-bold text-[10px] uppercase tracking-wider">Cheesy</span>
+                  <span className="text-white font-bold text-[8px] sm:text-[10px] uppercase tracking-wider">Cheesy</span>
                 </div>
               </motion.div>
 
@@ -150,11 +139,11 @@ export default function Home() {
                   scale: { type: "spring", delay: 0.9 },
                   y: { repeat: Infinity, duration: 4.5, ease: "easeInOut", delay: 0.9 }
                 }}
-                className="absolute bottom-[10%] left-[20%] z-20 w-28 h-28 rounded-full overflow-hidden border-4 border-white shadow-lg"
+                className="absolute bottom-[8%] left-[12%] sm:left-[20%] z-20 w-24 h-24 sm:w-32 sm:h-32 rounded-full overflow-hidden border-4 border-white shadow-xl"
               >
                 <img src="/makhana_mint.png" className="w-full h-full object-cover" alt="Herbal Makhana" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end justify-center pb-2">
-                  <span className="text-white font-bold text-xs uppercase tracking-wider">Mint</span>
+                  <span className="text-white font-bold text-[10px] sm:text-xs uppercase tracking-wider">Mint</span>
                 </div>
               </motion.div>
 
@@ -164,9 +153,9 @@ export default function Home() {
       </section>
 
       {/* Features Banner */}
-      <section className="bg-secondary text-white py-12">
+      <section className="bg-surface-low text-secondary py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center divide-x divide-white/10">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center divide-x divide-secondary/10">
             <div className="flex flex-col items-center gap-3">
               <Leaf className="w-8 h-8 text-accent" />
               <span className="font-medium">100% Organic</span>
@@ -188,7 +177,7 @@ export default function Home() {
       </section>
 
       {/* Featured Products */}
-      <section className="py-24 bg-background">
+      <section className="py-24 bg-surface">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-end mb-12">
             <div>
@@ -223,7 +212,7 @@ export default function Home() {
       </section>
 
       {/* Testimonials */}
-      <section className="py-24 bg-white border-y border-border/50">
+      <section className="py-24 bg-surface-low">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="font-display font-bold text-4xl text-secondary mb-16">Don't just take our word for it</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -232,7 +221,7 @@ export default function Home() {
               { text: "Finally a healthy snack that doesn't taste like cardboard. Premium quality makhanas.", name: "Mike T." },
               { text: "Switched from potato chips to these and never looking back. So crunchy and fresh!", name: "Priya M." }
             ].map((review, i) => (
-              <div key={i} className="bg-background p-8 rounded-3xl relative">
+              <div key={i} className="bg-surface p-8 rounded-[2rem] relative shadow-sm">
                 <div className="text-accent flex justify-center mb-4">
                   {[1, 2, 3, 4, 5].map(star => <Star key={star} className="w-5 h-5 fill-current" />)}
                 </div>

@@ -59,7 +59,7 @@ export function Navbar() {
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        className="max-w-7xl mx-auto h-[72px] rounded-full bg-white/70 backdrop-blur-xl border border-white/50 shadow-[0_8px_32px_-8px_rgba(0,0,0,0.08)] flex items-center justify-between px-6 pointer-events-auto"
+        className="max-w-7xl mx-auto h-[72px] rounded-full bg-background/80 backdrop-blur-[20px] border border-surface-highest/40 shadow-[0_8px_32px_-8px_rgba(29,27,24,0.05)] flex items-center justify-between px-6 pointer-events-auto"
       >
         <div className="flex items-center gap-8">
           <Link href="/" className="flex items-center gap-2 group">
@@ -69,7 +69,7 @@ export function Navbar() {
               alt="Makhana Logo"
               className="w-12 h-12 md:w-14 md:h-14 object-contain drop-shadow-md"
             />
-            <span className="font-display font-black text-2xl tracking-tight text-secondary group-hover:text-primary transition-colors">
+            <span className="font-display font-black text-xl sm:text-2xl tracking-tight text-secondary group-hover:text-primary transition-colors truncate">
               Makhana<span className="text-primary">.</span>
             </span>
           </Link>
@@ -84,7 +84,7 @@ export function Navbar() {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={toggleCart}
-            className="relative p-2.5 rounded-full bg-white/50 hover:bg-white border border-white/40 hover:border-border/50 shadow-sm transition-all"
+            className="hidden sm:relative sm:p-2.5 sm:rounded-full sm:bg-surface/50 sm:hover:bg-surface sm:border sm:border-surface-highest/40 sm:shadow-sm sm:transition-all"
           >
             <ShoppingBag className="w-5 h-5 text-secondary" />
             <AnimatePresence>
@@ -103,7 +103,7 @@ export function Navbar() {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setWishlistOpen(true)}
-            className="relative p-2.5 rounded-full bg-white/50 hover:bg-white border border-white/40 hover:border-border/50 shadow-sm transition-all"
+            className="hidden sm:relative sm:p-2.5 sm:rounded-full sm:bg-surface/50 sm:hover:bg-surface sm:border sm:border-surface-highest/40 sm:shadow-sm sm:transition-all"
           >
             <Heart className="w-5 h-5 text-secondary" />
             <AnimatePresence>
@@ -135,9 +135,6 @@ export function Navbar() {
                   <DropdownMenuLabel className="font-normal px-3 py-2">
                     <div className="flex flex-col space-y-1">
                       <p className="text-sm font-bold leading-none text-secondary tracking-tight">{user.username}</p>
-                      <p className="text-xs leading-none text-muted-foreground mt-1">
-                        {user.mobile}
-                      </p>
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator className="bg-border/40 my-2 shadow-[0_1px_0_0_rgba(255,255,255,0.8)]" />
@@ -179,7 +176,7 @@ export function Navbar() {
 
           <motion.button
             whileTap={{ scale: 0.9 }}
-            className="md:hidden p-2 text-secondary bg-white/50 border border-white/40 rounded-full hover:bg-white shadow-sm"
+            className="md:hidden p-2 text-secondary bg-surface/50 border border-surface-highest/40 rounded-full hover:bg-surface shadow-sm"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
             <Menu className="w-6 h-6" />
@@ -231,7 +228,6 @@ export function Navbar() {
                       </Avatar>
                       <div>
                         <div className="font-bold text-secondary">{user.username}</div>
-                        <div className="text-xs font-medium text-muted-foreground">{user.mobile}</div>
                       </div>
                     </div>
 

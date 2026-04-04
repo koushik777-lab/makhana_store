@@ -16,9 +16,9 @@ export function ProductCard({ product }: { product: Product }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       whileHover={{ y: -8 }}
-      className="group flex flex-col bg-white rounded-3xl overflow-hidden border border-border/60 shadow-lg shadow-black/5 transition-all duration-300 hover:shadow-xl hover:border-primary/30"
+      className="group flex flex-col bg-surface-lowest rounded-[1.5rem] overflow-hidden transition-all duration-300 hover:shadow-[0_20px_40px_rgba(27,28,26,0.05)]"
     >
-      <div className="relative aspect-square overflow-hidden bg-muted/30 p-6 flex items-center justify-center">
+      <div className="relative aspect-square overflow-hidden bg-surface-container p-6 flex items-center justify-center pt-10">
         {product.bestSeller && (
           <div className="absolute top-4 left-4 z-10 px-3 py-1 bg-accent text-secondary text-xs font-bold rounded-full shadow-sm">
             Best Seller
@@ -40,7 +40,7 @@ export function ProductCard({ product }: { product: Product }) {
         <img
           src={product.image}
           alt={product.name}
-          className="w-full h-full object-contain transform group-hover:scale-110 transition-transform duration-700 ease-out z-0 relative pointer-events-none"
+          className="w-[110%] h-[110%] object-contain -ml-4 -mt-4 transform group-hover:scale-[1.15] group-hover:rotate-3 transition-transform duration-700 ease-out z-0 relative pointer-events-none"
         />
       </div>
 
@@ -67,7 +67,7 @@ export function ProductCard({ product }: { product: Product }) {
 
         <button
           onClick={() => addItem(product)}
-          className="w-full mt-6 py-3 rounded-xl border-2 border-primary text-primary font-bold hover:bg-primary hover:text-white transition-all duration-300 flex items-center justify-center gap-2"
+          className="w-full mt-6 py-3 rounded-full bg-surface-highest text-foreground font-bold hover:bg-primary hover:text-white transition-all duration-300 flex items-center justify-center gap-2"
         >
           <Plus className="w-4 h-4" /> Add to Cart
         </button>
